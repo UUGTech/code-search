@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as puppeteer from 'puppeteer';
+import { URL } from 'url';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -16,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 async function searchWithGoogle(): Promise<void> {
 	const word = await vscode.window.showInputBox();
 	if(!word)return;
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({headless:false});
 	const page = await browser.newPage();
 	try {
 		// Visit Google
@@ -36,16 +37,25 @@ async function searchWithGoogle(): Promise<void> {
 				title: (elm as HTMLLinkElement).querySelector("h3")?.textContent
 			};
 		}));
-		var titles = "";
-		var links = "";
-		for(const result of results){
-			titles += result.title + "\n";
-			links += result.href + "\n";
+
+		let promises = [];
+		for(let result of results){
+			var url = new URL(result.href);
+			if(url.hostname!="qiita.com")continue;
+			promises.push((async ()=>{
+				const subPage = await browser.newPage();
+				try {
+					await subPage.goto(result.href, {waitUntil: 'networkidle2', timeout: 50000});
+					console.log(`visited: ${await subPage.title()}`);
+					await subPage.close();
+				} catch (e) {
+					console.log(e);
+					await subPage.close();
+				}
+			})());
 		}
-		console.log("titles");
-		console.log(titles);
-		console.log("links");
-		console.log(links);
+		await Promise.all(promises);
+		console.log("全部終わったんや");
 
 		vscode.window.showInformationMessage('無事終了');
 
