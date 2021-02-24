@@ -28,9 +28,7 @@ async function searchWithGoogle(): Promise<void> {
 		// Enter
 		await page.keyboard.press('Enter');
 		await page.waitForNavigation({waitUntil: 'networkidle2', timeout: 5000});
-		console.log("title");
-		console.log(await page.title());
-
+		
 		// Output hrefs
 		const results = await page.$$eval(".g > div > div > a", (list) => list.map((elm) => {
 			return {
