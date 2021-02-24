@@ -6,11 +6,6 @@ import * as puppeteer from 'puppeteer';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "code-search" is now active!');
-
 	const register = vscode.commands.registerCommand;
 
 	context.subscriptions.push(
@@ -19,7 +14,8 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function searchWithGoogle(): Promise<void> {
-	const word = "vscode extension api";
+	const word = await vscode.window.showInputBox();
+	if(!word)return;
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
 	try {
@@ -32,13 +28,28 @@ async function searchWithGoogle(): Promise<void> {
 		// Enter
 		await page.keyboard.press('Enter');
 		await page.waitForNavigation({waitUntil: 'networkidle2', timeout: 5000});
+		console.log("title");
+		console.log(await page.title());
 
 		// Output hrefs
-		const hrefs = await page.$$eval(".g a", (list) => list.map((elm) => (elm as HTMLLinkElement).href));
-		for(let i=0; i<2; i++){
-			vscode.window.showInformationMessage(hrefs[i]);
+		const results = await page.$$eval(".g > div > div > a", (list) => list.map((elm) => {
+			return {
+				href: (elm as HTMLLinkElement).href,
+				title: (elm as HTMLLinkElement).querySelector("h3")?.textContent
+			};
+		}));
+		var titles = "";
+		var links = "";
+		for(const result of results){
+			titles += result.title + "\n";
+			links += result.href + "\n";
 		}
-		vscode.window.showInformationMessage('これらが結果です');
+		console.log("titles");
+		console.log(titles);
+		console.log("links");
+		console.log(links);
+
+		vscode.window.showInformationMessage('無事終了');
 
 	}catch (e) {
 		// Ouput error to console
