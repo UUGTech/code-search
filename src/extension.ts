@@ -27,7 +27,7 @@ async function codeSearch(): Promise<void> {
 	var codeSearchResults: CodeSearchResult[] = new Array();
 
 	// Get input
-	const wordInput = vscode.window.showInputBox();
+	const wordInput = vscode.window.showInputBox({ignoreFocusOut:true});
 	
 	//const browserLaunch = puppeteer.launch();
 	const browserLaunch = puppeteer.launch({headless:false});		// 目視確認用
