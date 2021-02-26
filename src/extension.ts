@@ -81,6 +81,11 @@ async function codeSearch(): Promise<void> {
 	// Close browser
 	await browser.close();
 
+	// Display
+	displayResults();
+
+
+	//====================== functions ============================
 	/**
 	 * Manages the browsing on subPages
 	 */
@@ -109,6 +114,31 @@ async function codeSearch(): Promise<void> {
 			await subPage.close();
 		}
 	}
+
+	/**
+	 * Displays results
+	 */
+	function displayResults(){
+		const viewType = 'html';
+		const title = 'code-search';
+		const viewColumn = vscode.ViewColumn.Two;
+		const webviewPanel = vscode.window.createWebviewPanel(viewType, title, {viewColumn: viewColumn, preserveFocus: true});
+		webviewPanel.webview.html = `
+			<!DOCTYPE html>
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>code-search</title>
+			</head>
+			<body>
+				<h3>Hello World!!!</h3>
+			</body>
+		`;
+		webviewPanel.reveal();
+		console.log("hoo!");
+	}
+
+
 }
 
 // this method is called when your extension is deactivated
