@@ -6,7 +6,7 @@ import { URL } from 'url';
 
 // Results
 interface CodeSearchResult {
-	title:string
+	title:string|null
 	url:string
 	codes:string[]
 }
@@ -50,18 +50,21 @@ async function codeSearch(): Promise<void> {
 		// Get search results
 		const searchResults = await page.$$eval(".g > div > div > a", (list) => list.map((elm) => {
 			return {
-				href: (elm as HTMLLinkElement).href,
-				title: (elm as HTMLLinkElement).querySelector("h3")?.textContent
+				href: (elm as HTMLLinkElement).href as string,
+				title: (elm as HTMLLinkElement).querySelector("h3")?.textContent as string
 			};
 		}));
 
+		// Subpage browsing
 		var promises = [];
 		for(let result of searchResults){
 			var url = new URL(result.href);
 			if(url.hostname!="qiita.com")continue;
-			promises.push(subPageBrowse(url.href));
+			promises.push(subPageBrowse(url.href, result.title));
 		}
 		await Promise.all(promises);
+
+		// End
 		console.log("全部終了！！けっかはっっっぴょーっっ！！！！！");
 		console.log(codeSearchResults);
 
@@ -81,7 +84,7 @@ async function codeSearch(): Promise<void> {
 	/**
 	 * Manages the browsing on subPages
 	 */
-	async function subPageBrowse(url: string){
+	async function subPageBrowse(url: string, title: string|null){
 		const subPage = await browser.newPage();
 		try {
 			// Visit
@@ -94,8 +97,9 @@ async function codeSearch(): Promise<void> {
 			}));
 			var codes: string[] = new Array();
 			for(let content of codeContents)if(typeof(content)==="string")codes.push(content);
+			
 			// Deal with codes
-			const result: CodeSearchResult = {title: await subPage.title(), url: url, codes: codes};
+			const result: CodeSearchResult = {title: title, url: url, codes: codes};
 			codeSearchResults.push(result);
 
 			// Close
