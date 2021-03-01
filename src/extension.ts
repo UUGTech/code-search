@@ -10,27 +10,29 @@ interface CodeSearchResult {
 	url:string
 	codes:string[]
 }
+var extensionUri: vscode.Uri;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	const register = vscode.commands.registerCommand;
+	const extensionUri = context.extensionUri;
 
 	context.subscriptions.push(
-		register('code-search.search', async() => codeSearch())
+		register('code-search.search', async() => codeSearch(extensionUri))
 	);
 }
 
 /**
  * Main function of this extension
  */
-async function codeSearch(): Promise<void> {
+async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 	var codeSearchResults: CodeSearchResult[] = new Array();
 
 	// Get input
 	const wordInput = vscode.window.showInputBox({ignoreFocusOut:true});
 	
-	//const browserLaunch = puppeteer.launch();
-	const browserLaunch = puppeteer.launch({headless:false});		// 目視確認用
+	const browserLaunch = puppeteer.launch();
+	//const browserLaunch = puppeteer.launch({headless:false});		// 目視確認用
 
 	const browser = await browserLaunch;
 	const word = await wordInput;
@@ -65,7 +67,6 @@ async function codeSearch(): Promise<void> {
 		await Promise.all(promises);
 
 		// End
-		console.log("全部終了！！けっかはっっっぴょーっっ！！！！！");
 		console.log(codeSearchResults);
 
 		vscode.window.showInformationMessage('無事終了');
@@ -81,6 +82,11 @@ async function codeSearch(): Promise<void> {
 	// Close browser
 	await browser.close();
 
+	// Display
+	displayResults();
+
+
+	//====================== functions ============================
 	/**
 	 * Manages the browsing on subPages
 	 */
@@ -109,6 +115,67 @@ async function codeSearch(): Promise<void> {
 			await subPage.close();
 		}
 	}
+
+	/**
+	 * Displays results
+	 */
+	function displayResults(){
+		const viewType = 'html';
+		const title = 'code-search';
+		const viewColumn = vscode.ViewColumn.Two;
+		const webviewPanel = vscode.window.createWebviewPanel(viewType, title, {viewColumn: viewColumn, preserveFocus: true}, getWebviewOptions(extensionUri));
+		// css js uri
+		const scriptPathOnDisk = vscode.Uri.joinPath(extensionUri, 'media', 'message.js');
+		const styleResultsPath = vscode.Uri.joinPath(extensionUri, 'media', 'results.css');
+		const scriptUri = webviewPanel.webview.asWebviewUri(scriptPathOnDisk);
+		const styleResultsUri = webviewPanel.webview.asWebviewUri(styleResultsPath);
+		const nonce = getNonce();
+
+		var html = `
+			<!DOCTYPE html>
+			<html lang="ja">
+			<head>
+				<meta charset="UTF-8">
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webviewPanel.webview.cspSource}; img-src ${webviewPanel.webview.cspSource} https:; script-src 'nonce-${nonce}';">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<link href="${styleResultsUri}" rel="stylesheet">
+				<title>code-search</title>
+			</head>
+			<body>
+				<h1>Code-Search</h1>
+				<div id="results-div"></div>
+				<script nonce="${nonce}" src="${scriptUri}"></script>
+			</body>
+			</html>
+		`;
+		webviewPanel.webview.html = html;
+		for(let [index,res] of codeSearchResults.entries()){
+			webviewPanel.webview.postMessage({command:'addTitle', title:res.title, num:index});
+			for(let code of res.codes){
+				webviewPanel.webview.postMessage({command:'addCode', code:code, num:index});
+			}
+		}
+		webviewPanel.reveal();
+	}
+}
+
+function getNonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
+}
+
+function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
+	return {
+		// Enable javascript in the webview
+		enableScripts: true,
+
+		// And restrict the webview to only loading content from our extension's `media` directory.
+		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+	};
 }
 
 // this method is called when your extension is deactivated
