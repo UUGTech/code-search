@@ -8,7 +8,7 @@
         switch(message.command){
             case 'addTitle':
                 const resultsDiv = document.getElementById('results-div');
-                resultsDiv.innerHTML += `<h3 class="page-title">${message.title}</h3><div id="code-area-of-${message.num}"></div>`;
+                resultsDiv.innerHTML += `<h2 class="page-title">${message.title}</h2><div id="code-area-of-${message.num}"></div>`;
                 break;
             case 'addCode':
                 const codeArea = document.getElementById(`code-area-of-${message.num}`);
