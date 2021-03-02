@@ -48,7 +48,7 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 		await page.type('input[name=q]', word);
 		await page.keyboard.press('Enter');
 		await page.waitForNavigation({waitUntil: 'networkidle2', timeout: 5000});
-		
+
 		// Get search results
 		const searchResults = await page.$$eval(".g > div > div > a", (list) => list.map((elm) => {
 			return {
@@ -89,6 +89,8 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 	async function subPageBrowse(url: string, title: string|null, index: Number){
 		const subPage = await browser.newPage();
 		try {
+			// Add title on webviewPanel
+			webviewPanel.webview.postMessage({command:'addTitle', title:title, num:index});
 			// Visit
 			await subPage.goto(url, {waitUntil: 'networkidle2', timeout: 50000});
 	
@@ -100,8 +102,8 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 			var codes: string[] = new Array();
 			for(let content of codeContents)if(typeof(content)==="string")codes.push(content);
 
+			// Add codes on webviewPanel
 			if(codes.length){
-				webviewPanel.webview.postMessage({command:'addTitle', title:title, num:index});
 				for(let code of codes){
 					webviewPanel.webview.postMessage({command:'addCode', code:code, num:index});
 				}
