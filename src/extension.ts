@@ -10,7 +10,6 @@ interface CodeSearchResult {
 	url:string
 	codes:string[]
 }
-var extensionUri: vscode.Uri;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -36,8 +35,9 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 
 	const browser = await browserLaunch;
 	const word = await wordInput;
-	if(!word)return;
 	const page = await browser.newPage();
+	const webviewPanel = makeWebviewPanel(extensionUri);
+	if(!word)return;
 
 	try {
 		// Visit Google
@@ -59,10 +59,10 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 
 		// Subpage browsing
 		var promises = [];
-		for(let result of searchResults){
+		for(let [index,result] of searchResults.entries()){
 			var url = new URL(result.href);
 			if(url.hostname!="qiita.com")continue;
-			promises.push(subPageBrowse(url.href, result.title));
+			promises.push(subPageBrowse(url.href, result.title, index));
 		}
 		await Promise.all(promises);
 
@@ -72,7 +72,7 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 		vscode.window.showInformationMessage('無事終了');
 
 	}catch (e) {
-		// Ouput error to console
+		// Output error to console
 		console.log(e);
 
 		// Close browser and exit
@@ -82,15 +82,11 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 	// Close browser
 	await browser.close();
 
-	// Display
-	displayResults();
-
-
 	//====================== functions ============================
 	/**
 	 * Manages the browsing on subPages
 	 */
-	async function subPageBrowse(url: string, title: string|null){
+	async function subPageBrowse(url: string, title: string|null, index: Number){
 		const subPage = await browser.newPage();
 		try {
 			// Visit
@@ -103,6 +99,13 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 			}));
 			var codes: string[] = new Array();
 			for(let content of codeContents)if(typeof(content)==="string")codes.push(content);
+
+			if(codes.length){
+				webviewPanel.webview.postMessage({command:'addTitle', title:title, num:index});
+				for(let code of codes){
+					webviewPanel.webview.postMessage({command:'addCode', code:code, num:index});
+				}
+			}
 			
 			// Deal with codes
 			const result: CodeSearchResult = {title: title, url: url, codes: codes};
@@ -115,48 +118,39 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 			await subPage.close();
 		}
 	}
+}
 
-	/**
-	 * Displays results
-	 */
-	function displayResults(){
-		const viewType = 'html';
-		const title = 'code-search';
-		const viewColumn = vscode.ViewColumn.Two;
-		const webviewPanel = vscode.window.createWebviewPanel(viewType, title, {viewColumn: viewColumn, preserveFocus: true}, getWebviewOptions(extensionUri));
-		// css js uri
-		const scriptPathOnDisk = vscode.Uri.joinPath(extensionUri, 'media', 'message.js');
-		const styleResultsPath = vscode.Uri.joinPath(extensionUri, 'media', 'results.css');
-		const scriptUri = webviewPanel.webview.asWebviewUri(scriptPathOnDisk);
-		const styleResultsUri = webviewPanel.webview.asWebviewUri(styleResultsPath);
-		const nonce = getNonce();
+function makeWebviewPanel(extensionUri: vscode.Uri){
+	const viewType = 'html';
+	const title = 'code-search';
+	const viewColumn = vscode.ViewColumn.Two;
+	const webviewPanel = vscode.window.createWebviewPanel(viewType, title, {viewColumn: viewColumn, preserveFocus: true}, getWebviewOptions(extensionUri));
+	// css js uri
+	const scriptPathOnDisk = vscode.Uri.joinPath(extensionUri, 'media', 'message.js');
+	const styleResultsPath = vscode.Uri.joinPath(extensionUri, 'media', 'results.css');
+	const scriptUri = webviewPanel.webview.asWebviewUri(scriptPathOnDisk);
+	const styleResultsUri = webviewPanel.webview.asWebviewUri(styleResultsPath);
+	const nonce = getNonce();
 
-		var html = `
-			<!DOCTYPE html>
-			<html lang="ja">
-			<head>
-				<meta charset="UTF-8">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webviewPanel.webview.cspSource}; img-src ${webviewPanel.webview.cspSource} https:; script-src 'nonce-${nonce}';">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="${styleResultsUri}" rel="stylesheet">
-				<title>code-search</title>
-			</head>
-			<body>
-				<h1>Code-Search</h1>
-				<div id="results-div"></div>
-				<script nonce="${nonce}" src="${scriptUri}"></script>
-			</body>
-			</html>
-		`;
-		webviewPanel.webview.html = html;
-		for(let [index,res] of codeSearchResults.entries()){
-			webviewPanel.webview.postMessage({command:'addTitle', title:res.title, num:index});
-			for(let code of res.codes){
-				webviewPanel.webview.postMessage({command:'addCode', code:code, num:index});
-			}
-		}
-		webviewPanel.reveal();
-	}
+	var html = `
+		<!DOCTYPE html>
+		<html lang="ja">
+		<head>
+			<meta charset="UTF-8">
+			<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webviewPanel.webview.cspSource}; img-src ${webviewPanel.webview.cspSource} https:; script-src 'nonce-${nonce}';">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<link href="${styleResultsUri}" rel="stylesheet">
+			<title>code-search</title>
+		</head>
+		<body>
+			<h1>Code-Search</h1>
+			<div id="results-div"></div>
+			<script nonce="${nonce}" src="${scriptUri}"></script>
+		</body>
+		</html>
+	`;
+	webviewPanel.webview.html = html;
+	return webviewPanel;
 }
 
 function getNonce() {
