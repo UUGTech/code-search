@@ -6,15 +6,24 @@ div.code-frame{
     padding: 10px;
     margin-bottom: 10px;
     margin: 10px 2px;
-    border: solid 3px skyblue;
+    border: solid 3px dimgray;
     background-color: black;
+}
+
+div.code-area{
+    padding: 5px;
+    margin: 10px;
+    border: solid 3px skyblue;
+    background-color: dimgray;
+    overflow: auto;
+    height: 500px;
 }
 
 h2.page-title{
     padding: 2px;
-    margin: 2px;
+    margin: 10px;
     border: solid 3px skyblue;
-    background-color: black;
+    background-color: dimgray;
 }
 
 pre{
