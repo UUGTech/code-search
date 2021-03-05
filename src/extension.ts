@@ -92,7 +92,8 @@ async function codeSearch(extensionUri: vscode.Uri): Promise<void> {
 			// Add title on webviewPanel
 			webviewPanel.webview.postMessage({command:'addTitle', title:title, num:index});
 			// Visit
-			await subPage.goto(url, {waitUntil: 'networkidle2', timeout: 50000});
+			await subPage.goto(url, {timeout: 50000});
+			await subPage.waitForSelector("div.code-frame > div.highlight");
 	
 			// Get codes described at the page
 			const codeContents = await subPage.$$eval("div.code-frame > div.highlight", (lsit)=>lsit.map((elm)=>{
