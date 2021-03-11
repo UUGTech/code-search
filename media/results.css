@@ -7,15 +7,13 @@ div.code-frame{
     margin-bottom: 10px;
     margin: 10px 2px;
     border: solid 3px dimgray;
-    background-color: black;
 }
 
 div.code-area{
     padding: 5px;
     margin: 10px;
     border: solid 3px skyblue;
-    background-color: dimgray;
-    overflow: auto;
+    overflow-y: auto;
     height: 500px;
 }
 
