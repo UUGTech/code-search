@@ -130,9 +130,14 @@ function makeWebviewPanel(extensionUri: vscode.Uri){
 	const webviewPanel = vscode.window.createWebviewPanel(viewType, title, {viewColumn: viewColumn, preserveFocus: true}, getWebviewOptions(extensionUri));
 	// css js uri
 	const scriptPathOnDisk = vscode.Uri.joinPath(extensionUri, 'media', 'message.js');
+	const scriptPrettifyPath = vscode.Uri.joinPath(extensionUri, 'media', 'prettify.js');
 	const styleResultsPath = vscode.Uri.joinPath(extensionUri, 'media', 'results.css');
+	const stylePrettifyPath = vscode.Uri.joinPath(extensionUri, 'media', 'TomorrowNightEighties.css');
+
 	const scriptUri = webviewPanel.webview.asWebviewUri(scriptPathOnDisk);
+	const scriptPrettifyUri = webviewPanel.webview.asWebviewUri(scriptPrettifyPath);
 	const styleResultsUri = webviewPanel.webview.asWebviewUri(styleResultsPath);
+	const stylePrettifyUri = webviewPanel.webview.asWebviewUri(stylePrettifyPath);
 	const nonce = getNonce();
 
 	var html = `
@@ -143,12 +148,19 @@ function makeWebviewPanel(extensionUri: vscode.Uri){
 			<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webviewPanel.webview.cspSource}; img-src ${webviewPanel.webview.cspSource} https:; script-src 'nonce-${nonce}';">
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 			<link href="${styleResultsUri}" rel="stylesheet">
+			<script nonce="${nonce}" src="${scriptPrettifyUri}"></script>
+			<link href="${stylePrettifyUri}" rel="stylesheet">
 			<title>code-search</title>
 		</head>
 		<body>
 			<h1>Code-Search</h1>
 			<div id="results-div"></div>
 			<script nonce="${nonce}" src="${scriptUri}"></script>
+			<script nonce="${nonce}">
+			window.addEventListener("load", function() {
+				PR.prettyPrint();
+			});
+			</script>
 		</body>
 		</html>
 	`;
