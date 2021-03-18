@@ -12,8 +12,7 @@ import { URL } from 'url';
  * 
  * 
  * 			 ======= TO DO ========
- * 
- *			 - タブ切り替え時はhtmlの中身をキープ
+ *
  * 
  *			 - Qiita 以外のサイトに対応
  * 
@@ -66,7 +65,6 @@ class CodeSearchPanel{
 	private _disposables: vscode.Disposable[] = [];
 	private _codeSearchResults: CodeSearchResult[] = new Array();
 
-
 	/**
 	 * constructor
 	 */
@@ -105,7 +103,7 @@ class CodeSearchPanel{
 
 	/**
 	 * (1) If we already have a panel, show it.
-	 * (2) Otherwise, creat a new one.
+	 * (2) Otherwise, create a new one.
 	 */
 	public static createOrShow(extensionUri: vscode.Uri){
 		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
@@ -122,7 +120,7 @@ class CodeSearchPanel{
 			CodeSearchPanel.viewType,
 			'Code Search',
 			{viewColumn: column || vscode.ViewColumn.One, preserveFocus: true},
-			getWebviewOptions(extensionUri),
+			Object.assign(getWebviewPanelOptions(), getWebviewOptions(extensionUri))
 		);
 
 		CodeSearchPanel.currentPanel = new CodeSearchPanel(panel, extensionUri);
@@ -132,6 +130,7 @@ class CodeSearchPanel{
 	 * Makes base html of result webview
 	 */
 	private _makeBaseHtml(webView: vscode.Webview){
+		console.log('====make_base_html=====');
 		// css js uri
 		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'message.js');
 		const scriptPrettifyPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'prettify.js');
@@ -279,7 +278,7 @@ function getNonce() {
 	return text;
 }
 
-// Returns webviewPanel opthions
+// Returns webview options
 function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 	return {
 		// Enable javascript in the webview
@@ -288,4 +287,12 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 		// And restrict the webview to only loading content from our extension's `media` directory.
 		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
 	};
+}
+
+// Returns WebviewPanelOptions
+function getWebviewPanelOptions(): vscode.WebviewPanelOptions{
+	return {
+		// Keep the webview panel's content even when the panel become hidden
+		retainContextWhenHidden: true
+	}
 }
