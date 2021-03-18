@@ -20,10 +20,12 @@ div.code-area{
 h2.page-title{
     padding: 2px;
     margin: 10px;
+    font-size: 24px;
     border: solid 3px skyblue;
     background-color: dimgray;
 }
 
 pre{
+    font-size: 18px;
     overflow-x: auto;
 }

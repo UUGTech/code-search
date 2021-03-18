@@ -7,11 +7,15 @@
         // get message
         const message = event.data;
 
-        // add title or code
+        // add title, code, url
         switch(message.command){
             case 'addTitle':
                 const resultsDiv = document.getElementById('results-div');
-                resultsDiv.innerHTML += `<h2 class="page-title">${message.title}</h2><div class="code-area" id="code-area-of-${message.num}"></div>`;
+                resultsDiv.innerHTML += `<h2 class="page-title">${message.title}</h2><div id="link-area-of-${message.num}"></div><div class="code-area" id="code-area-of-${message.num}"></div>`;
+                break;
+            case 'addLink':
+                const linkArea = document.getElementById(`link-area-of-${message.num}`);
+                linkArea.innerHTML = `<a href="${message.url}">${message.url}</a>`;
                 break;
             case 'addCode':
                 const codeArea = document.getElementById(`code-area-of-${message.num}`);
