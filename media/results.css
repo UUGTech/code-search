@@ -17,6 +17,10 @@ div.code-area{
     height: 500px;
 }
 
+div.link-area{
+    margin-left: 10px;
+}
+
 h2.page-title{
     padding: 2px;
     margin: 10px;
@@ -26,6 +30,6 @@ h2.page-title{
 }
 
 pre{
-    font-size: 18px;
+    font-size: 14px;
     overflow-x: auto;
 }
