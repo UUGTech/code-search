@@ -2,30 +2,6 @@ import * as vscode from 'vscode';
 import * as puppeteer from 'puppeteer';
 import { URL } from 'url';
 
-/**
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 			 ======= TO DO ========
- *
- *			 - コピーボタンの作成(code-frameごと)
- * 
- * 			 - 設定から結果表示を新規タブにするかどうかを変更できるようにする。デフォルトでは新規タブ。
- * 
- *
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
 
 // Results
 interface CodeSearchResult {
@@ -160,6 +136,7 @@ class CodeSearchPanel{
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleResultsUri}" rel="stylesheet">
 				<script nonce="${nonce}" src="${scriptPrettifyUri}"></script>
+				<script nonce="${nonce}" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 				<link href="${stylePrettifyUri}" rel="stylesheet">
 				<title>code-search</title>
 			</head>
@@ -167,11 +144,6 @@ class CodeSearchPanel{
 				<h1>Code-Search</h1>
 				<div id="results-div"></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
-				<script nonce="${nonce}">
-				window.addEventListener("load", function() {
-					PR.prettyPrint();
-				});
-				</script>
 			</body>
 			</html>
 		`;
@@ -259,8 +231,8 @@ class CodeSearchPanel{
 
 			// Add codes on webviewPanel
 			if(codes.length){
-				for(let code of codes){
-					webView.postMessage({command:'addCode', code:code, num:index});
+				for(let i=0; i<codes.length; i++){
+					webView.postMessage({command:'addCode', code:codes[i], num:index, codeId:i});
 				}
 			}
 			
