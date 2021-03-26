@@ -1,7 +1,5 @@
 (function() {
     const vscode = acquireVsCodeApi();
-    
-    const oldState = vscode.getState();
 
     window.addEventListener('message', event=>{
         // get message
@@ -11,7 +9,7 @@
         switch(message.command){
             case 'addTitle':
                 const resultsDiv = document.getElementById('results-div');
-                resultsDiv.innerHTML += `<h2 class="page-title">${message.title}</h2><div id="link-area-of-${message.num}"></div><div class="code-area" id="code-area-of-${message.num}"></div>`;
+                resultsDiv.innerHTML += `<h2 class="page-title">${message.title}</h2><div class="link-area" id="link-area-of-${message.num}"></div><div class="code-area" id="code-area-of-${message.num}"></div>`;
                 break;
             case 'addLink':
                 const linkArea = document.getElementById(`link-area-of-${message.num}`);

@@ -13,14 +13,11 @@ import { URL } from 'url';
  * 
  * 			 ======= TO DO ========
  *
- * 
- *			 - Qiita 以外のサイトに対応
- * 
  *			 - コピーボタンの作成(code-frameごと)
  * 
+ * 			 - 設定から結果表示を新規タブにするかどうかを変更できるようにする。デフォルトでは新規タブ。
  * 
- * 
- * 
+ *
  * 
  * 
  * 
@@ -49,6 +46,18 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 }
+
+
+const querySelectors:{hostname: string, selector: string}[] = [
+	{
+		hostname: "qiita.com",
+		selector: "div.code-frame > div.highlight"
+	},
+	{
+		hostname: "hatenablog.com",
+		selector: "pre.code"
+	}
+]
 
 
 
@@ -130,7 +139,6 @@ class CodeSearchPanel{
 	 * Makes base html of result webview
 	 */
 	private _makeBaseHtml(webView: vscode.Webview){
-		console.log('====make_base_html=====');
 		// css js uri
 		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'message.js');
 		const scriptPrettifyPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'prettify.js');
@@ -209,8 +217,10 @@ class CodeSearchPanel{
 			var promises = [];
 			for(let [index,result] of searchResults.entries()){
 				var url = new URL(result.href);
-				if(url.hostname!="qiita.com")continue;
-				promises.push(this._subPageBrowse(url.href, result.title, index, browser, webView));
+				const querySelector = getQuerySelector(url);
+				if(querySelector){
+					promises.push(this._subPageBrowse(querySelector, url.href, result.title, index, browser, webView));
+				}
 			}
 			await Promise.all(promises);
 
@@ -229,7 +239,7 @@ class CodeSearchPanel{
 		await browser.close();
 	}
 
-	private async _subPageBrowse(url: string, title: string|null, index: Number, browser: puppeteer.Browser, webView: vscode.Webview){
+	private async _subPageBrowse(querySelector: string, url: string, title: string|null, index: Number, browser: puppeteer.Browser, webView: vscode.Webview){
 		const subPage = await browser.newPage();
 		try {
 			// Add title on webviewPanel
@@ -237,10 +247,10 @@ class CodeSearchPanel{
 			webView.postMessage({command:'addLink', url:url, num:index});
 			// Visit
 			await subPage.goto(url, {timeout: 50000});
-			await subPage.waitForSelector("div.code-frame > div.highlight");
+			await subPage.waitForSelector(querySelector);
 	
 			// Get codes described at the page
-			const codeContents = await subPage.$$eval("div.code-frame > div.highlight", (lsit)=>lsit.map((elm)=>{
+			const codeContents = await subPage.$$eval(querySelector, (lsit)=>lsit.map((elm)=>{
 				const content = (elm as HTMLElement).textContent;
 				if(typeof(content)==='string')return (elm as HTMLElement).textContent;
 			}));
@@ -295,4 +305,15 @@ function getWebviewPanelOptions(): vscode.WebviewPanelOptions{
 		// Keep the webview panel's content even when the panel become hidden
 		retainContextWhenHidden: true
 	}
+}
+
+// Returns if the host of the url is available
+function getQuerySelector(url: URL){
+	console.log(url.hostname);
+	for(let querySelector of querySelectors){
+		if(url.hostname.endsWith(querySelector.hostname)){
+			return querySelector.selector;
+		}
+	}
+	return false;
 }
