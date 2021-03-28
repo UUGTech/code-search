@@ -1,8 +1,13 @@
 # Code-Search README
 
-## Features
+## 何ができるのか(Features)
 
-"Code-Search" allows you to solve implementation problems within vscode, without having to search for it in the browser
+`Code-Search`は、ブラウザで検索することなく、vscode内でコード実装の疑問を検索することができます。
+(`Code-Search` allows you to search for code implementation questions in vscode without having to search in a browser.)
+
+検索ワードに関連するページから抽出されたコードを表示します。(Displays the code extracted from pages related to the search word.)
+
+現在は日本語技術情報共有サービスである[Qiita](https://qiita.com/)と日本語ブログサービスである[Hatena Blog](https://hatenablog.com/)のみに対応しています。(Currently, only [Qiita](https://qiita.com/), a Japanese technical information sharing service, and [Hatena Blog](https://hatenablog.com/), a Japanese blog service, are supported.)
 
 For example if there is an image subfolder under your extension project workspace:
 
@@ -10,27 +15,11 @@ For example if there is an image subfolder under your extension project workspac
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
-## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
 
-## Extension Settings
+## 使い方(Usage)
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+`code-search.search`というコマンドを実行し、入力ボックスに検索ワードを入れてください。(Execute the command `code-search.search`, put your search words in the input box and enter.)
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
 
 

@@ -18,7 +18,7 @@
 		"commands": [
 			{
 				"command": "code-search.search",
-				"title": "Search codes related with input words."
+				"title": "Code Search"
 			}
 		]
 	},
