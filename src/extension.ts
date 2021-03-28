@@ -82,9 +82,6 @@ class CodeSearchPanel{
 
 	}
 
-	public revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri){
-		CodeSearchPanel.currentPanel = new CodeSearchPanel(panel, extensionUri);
-	}
 
 
 	/**
@@ -96,7 +93,7 @@ class CodeSearchPanel{
 
 		// (1)
 		if(CodeSearchPanel.currentPanel){
-			CodeSearchPanel.currentPanel._panel.reveal(column);
+			CodeSearchPanel.currentPanel._panel.reveal(column, true);
 			return;
 		}
 
@@ -128,7 +125,7 @@ class CodeSearchPanel{
 		const stylePrettifyUri = webView.asWebviewUri(stylePrettifyPath);
 		const nonce = getNonce();
 
-		var html = `
+		const html = `
 			<!DOCTYPE html>
 			<html lang="ja">
 			<head>
@@ -201,9 +198,12 @@ class CodeSearchPanel{
 			// Output error to console
 			console.log(e);
 
-			// Close browser and exit
+			// Close browser
 			await browser.close();
-			process.exit(200);
+
+			// Show error html
+			this._panel.webview.html = makeErrorHtml();
+			
 		}
 		// Close browser
 		await browser.close();
@@ -279,11 +279,29 @@ function getWebviewPanelOptions(): vscode.WebviewPanelOptions{
 
 // Returns if the host of the url is available
 function getQuerySelector(url: URL){
-	console.log(url.hostname);
 	for(let querySelector of querySelectors){
 		if(url.hostname.endsWith(querySelector.hostname)){
 			return querySelector.selector;
 		}
 	}
 	return false;
+}
+
+function makeErrorHtml(){
+	const html = `
+		<!DOCTYPE html>
+		<html lang="ja">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>code-search</title>
+		</head>
+		<body>
+			<h1>Code-Search</h1>
+			<h3>Error has occured!</h3>
+			<p>インターネット接続を確認してください.(Please check your internet connection.)</p>
+		</body>
+		</html>
+	`;
+	return html;
 }
