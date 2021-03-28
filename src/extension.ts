@@ -10,6 +10,7 @@ interface CodeSearchResult {
 	codes:string[]
 }
 
+// Activate
 export function activate(context: vscode.ExtensionContext) {
 	const register = vscode.commands.registerCommand;
 
@@ -23,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-
+// Selector information
 const querySelectors:{hostname: string, selector: string}[] = [
 	{
 		hostname: "qiita.com",
@@ -195,9 +196,6 @@ class CodeSearchPanel{
 				}
 			}
 			await Promise.all(promises);
-
-			// End
-			vscode.window.showInformationMessage('無事終了');
 
 		}catch (e) {
 			// Output error to console
