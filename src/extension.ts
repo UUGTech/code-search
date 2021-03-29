@@ -192,7 +192,11 @@ class CodeSearchPanel{
 					promises.push(this._subPageBrowse(querySelector, url.href, result.title, index, browser, webView));
 				}
 			}
-			await Promise.all(promises);
+			if(promises.length==0){
+				this._panel.webview.html = makeNotFoundHtml();
+			}else{
+				await Promise.all(promises);
+			}
 
 		}catch (e) {
 			// Output error to console
@@ -300,6 +304,24 @@ function makeErrorHtml(){
 			<h1>Code-Search</h1>
 			<h3>Error has occured!</h3>
 			<p>インターネット接続を確認してください.(Please check your internet connection.)</p>
+		</body>
+		</html>
+	`;
+	return html;
+}
+
+function makeNotFoundHtml(){
+	const html = `
+		<!DOCTYPE html>
+		<html lang="ja">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>code-search</title>
+		</head>
+		<body>
+			<h1>Code-Search</h1>
+			<h3>No page was found</h3>
 		</body>
 		</html>
 	`;
