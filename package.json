@@ -1,7 +1,7 @@
 {
 	"name": "code-search",
 	"displayName": "code-search",
-	"description": "",
+	"description": "vscode extension that can search codes around the Internet in Japanese.",
 	"version": "0.0.1",
 	"publisher": "UUGTech",
 	"engines": {
@@ -10,6 +10,14 @@
 	"categories": [
 		"Other"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/UUGTech/code-search.git"
+	},
+	"bugs": {
+		"url": "https://github.com/UUGTech/code-search/issues"
+	},
+	"homepage": "https://github.com/UUGTech/code-search/blob/master/README.md",
 	"activationEvents": [
 		"onCommand:code-search.search"
 	],
