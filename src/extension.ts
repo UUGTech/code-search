@@ -176,7 +176,7 @@ class CodeSearchPanel{
 			await page.waitForNavigation({waitUntil: 'networkidle2', timeout: 5000});
 
 			// Get search results
-			const searchResults = await page.$$eval(".g > div > div > a", (list) => list.map((elm) => {
+			const searchResults = await page.$$eval("div.g a", (list) => list.map((elm) => {
 				return {
 					href: (elm as HTMLLinkElement).href as string,
 					title: (elm as HTMLLinkElement).querySelector("h3")?.textContent as string
